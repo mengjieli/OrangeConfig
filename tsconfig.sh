@@ -1,0 +1,1 @@
+node main.js --l=ts --dir=./config  --out=./examples/ts/res --tsout=./examples/ts/src/Config.ts --package=config

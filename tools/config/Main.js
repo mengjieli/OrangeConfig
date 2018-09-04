@@ -8,6 +8,7 @@
 require("./../../lib/com/requirecom");
 require("./Type");
 require("./go/Go");
+require("./ts/TS");
 
 
 
@@ -60,8 +61,10 @@ if(flag) {
         var content = "";
         let list = contents[0].data;
         if(language == "ts") {
-            content = JSON.stringify(list);
-            (new File(FilePath.join(outURL,files[i].name + ".json"))).save(content);
+            if(!parser) {
+                parser = new TS();
+            }
+            parser.addPage(params,files[i].name,contents[0].name,contents[0].data);
         } else if(language == "go") {
             if(!parser) {
                 parser = new Go();

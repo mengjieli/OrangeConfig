@@ -1,0 +1,8 @@
+{
+    "compilerOptions": {
+    },
+    "files": [
+        "Main.ts",
+        "./src/Config.ts"
+    ]
+}

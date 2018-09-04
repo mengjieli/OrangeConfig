@@ -1,16 +1,21 @@
-require("./GoTemp");
+require("./TSTemp");
 
 function changeNameToNameS(name) {
-    return ('' + name.charAt(0)).toLocaleLowerCase() + name.slice(1,name.length);
+    return ('' + name.charAt(0)).toLocaleLowerCase() + name.slice(1, name.length);
 }
 
 function getClassName(name) {
-    return ('' + name.charAt(0)).toLocaleUpperCase() + name.slice(1,name.length) + "Config";
+    return ('' + name.charAt(0)).toLocaleUpperCase() + name.slice(1, name.length);
 }
 
 function getAttributeName(name) {
-    return ('' + name.charAt(0)).toLocaleUpperCase() + name.slice(1,name.length);
+    return name;
 }
+
+function getAttributeFunctionName(name) {
+    return ('' + name.charAt(0)).toLocaleUpperCase() + name.slice(1, name.length);
+}
+
 
 function changeAttribute(name) {
     return "C_item_" + getAttributeName(name);
@@ -20,15 +25,15 @@ function changeAttributeToSave(name) {
     return "c_item_" + getAttributeName(name);
 }
 
-function getGetFunctionName(className,name) {
-    return "Get" + className +  "By" + getAttributeName(name);
+function getGetFunctionName(className, name) {
+    return "Get" + className + "By" + getAttributeName(name);
 }
 
 var version = 1.0;
 
-class GoFile {
+class TSFile {
 
-    constructor(fileName,types,names) {
+    constructor(fileName, types, names) {
         this.fileName = fileName;
         this.types = types;
         this.names = names;
@@ -36,110 +41,122 @@ class GoFile {
 
     getClassDefine() {
         /**
-         type HitPoint struct {
-        id int32
-        x int32
-        y int32
-        r int32
-    }
-    
-    type HitPointTable struct {
-        HitPoint [] HitPoint
-    }
-    
-    func DecodeHitPoint() []HitPoint {
-        v := HitPointTable{}
-        Load(tableURL + "HitPoint.json", &v)
-        return v.HitPoints
-    }
+    export class HitPoint {
 
-    func GetHitPoint(value int) HitPointConfig {
-        for k, v := range tables.HitPoint {
-            if(v.id == value) return v
-        }
-        return nil
-    }
+        public id:number;
+        public x:number;
+        public y:number;
+        public r:number;
+        public role:Role;
+        
+        public static list:Array<HitPoint> = [];
 
-    func GetHitPointByX(value int) HitPointConfig {
-        for k, v := range tables.HitPoint {
-            if(v.X == value) return v
+        public static getById(value:number) {
+            let list = HitPoint.list;
+            for(let i = 0; i < list.length; i++) {
+                if(list[i].id == value) return list[i];
+            }
+            return null;
         }
-        return nil
+
+        public static decode(list:Array<any>) {
+            HitPoint.list.length = 0;
+            for(let i = 0; i < list.length; i++) {
+                let item = new HitPoint();
+                for(let k in list[i]) {
+                    item[k] = list[i];
+                }
+                HitPoint.list.push(item);
+            }
+        }
+
+        public static link() {
+            HitPoint.list.length = 0;
+            let list = HitPoint.list;
+            for(let i = 0; i < list.length; i++) {
+                let item = list[i];
+                item.role = Role.getById(item["c_item_role"])
+            }
+            return null;
+        }
     }
          */
-        let content = "type " + getClassName(this.fileName) + " struct {\n";
-        for(let i = 0; i < this.types.length; i++) {
-            if(this.types[i].isClass) {
-                content += "  " + changeAttribute(this.names[i]) + " " + this.getTypeString2(this.types[i]) + "\n";
-            }
-            content += "  " + getAttributeName(this.names[i]) + " " + this.getTypeString(this.types[i]) + "\n";
+        let content = "";
+        this.hasLink = false;
+        content += "  export class " + getClassName(this.fileName) + " {\n";
+        for (let i = 0; i < this.types.length; i++) {
+            content += "    public " + getAttributeName(this.names[i]) + ":" + this.getTypeString(this.types[i]) + "\n";
         }
-        content += "}\n\n"
-        content += "type " + this.getTableName() + " struct {\n"
-        content += "    " + this.getClassName() + " []" + getClassName(this.fileName) + "\n"
-        content += "}\n\n";
-
-        content += "func " + this.getFunctionName() + "() {\n";
-        content += "  v := " + this.getTableName() + "{}\n";
-        content += "  Load(tableURL + \"" + this.fileName + ".json\", &v)\n";
-        content += "  tables." + this.getClassName() + " = v." + this.getClassName() + "\n";
-        content += "}\n\n";
-
+        content += "\n    public static list:Array<" + getClassName(this.fileName) + "> = [];\n\n";
         let linkContent = "";
-        let hasLink = false;
-        linkContent += "func " + this.getLinkFunctionName() + "() {\n";
-        linkContent += "    for k, _ := range tables." + this.getClassName() + " {\n";
-        linkContent += "        var v *" + getClassName(this.fileName) + " = &tables." + this.getClassName() + "[k]\n"
-        for(let i = 0; i < this.types.length; i++) {
-            if(this.types[i].isClass) {
-                hasLink = true;
-                if(this.types[i].isArray) {
-                    linkContent += "        for k2, v2 := range v." + changeAttribute(this.names[i]) + " {\n";
-                    linkContent += "            v." + getAttributeName(this.names[i]) + "[k2] = " + getGetFunctionName(this.types[i].className,"id") + "(v2)\n";
+        linkContent += "    public static link() {\n";
+        linkContent += "      let list = " + getClassName(this.fileName) + ".list;\n";
+        linkContent += "      for(let i = 0; i < list.length; i++) {\n";
+        linkContent += "        let item = list[i];\n";
+        for (let i = 0; i < this.types.length; i++) {
+            if (!this.types[i].isArray) {
+                if (this.types[i].isClass) {
+                } else {
+                    content += "    public static getBy" + getAttributeFunctionName(this.names[i]) + "(value:" + this.getTypeString(this.types[i]) + "):" + getClassName(this.fileName) + " {\n";
+                    content += "      let list = " + getClassName(this.fileName) + ".list;\n";
+                    content += "      for(let i = 0; i < list.length; i++) {\n";
+                    content += "        if(list[i]." + getAttributeName(this.names[i]) + " == value) return list[i];\n";
+                    content += "      }\n";
+                    content += "      return null;\n";
+                    content += "    }\n\n";
+                }
+            }
+            if (this.types[i].isClass) {
+                this.hasLink = true;
+                if (this.types[i].isArray) {
+                    linkContent += "        for(let n = 0; n < item[\"" + changeAttributeToSave(this.names[i]) + "\"].length; n++) {\n";
+                    linkContent += "          item." + getAttributeName(this.names[i]) + "[n] = "
+                        + getClassName(this.types[i].className) + ".getById(item[\""
+                        + changeAttributeToSave(this.names[i]) + "\"][n]);\n";
                     linkContent += "        }\n";
                 } else {
-                    linkContent += "        v." + getAttributeName(this.names[i]) + " = " + getGetFunctionName(this.types[i].className,"id") + "(v." + changeAttribute(this.names[i]) + ")\n";
+                    linkContent += "        item." + getAttributeName(this.names[i]) + " = "
+                        + getClassName(this.types[i].className) + ".getById(item[\""
+                        + changeAttributeToSave(this.names[i]) + "\"]);\n";
                 }
             }
         }
-        linkContent += "    }\n";
-        linkContent += "}\n\n";
-        if(!hasLink) linkContent = "";
-        this.hasLink = hasLink;
-        content += linkContent;
+        linkContent += "      }\n";
+        linkContent += "      return null;\n";
+        linkContent += "    }\n\n";
 
-        for(let i = 0; i < this.types.length; i++) {
-            if(this.types[i].isArray) continue;
-            if(this.types[i].isClass) {
-                
-            } else {
-                content += "func " + getGetFunctionName(this.getClassName(),this.names[i]) 
-                + " (value " + this.getBaseType(this.types[i].baseType) + ") *" + getClassName(this.fileName) + " {\n";
-                content += "    for k, _ := range tables." + this.getClassName() + " {\n";
-                content += "        if(tables." + this.getClassName() + "[k]." + getAttributeName(this.names[i]) + " == value) {\n";
-                content += "            return &tables." + this.getClassName() + "[k]\n";
-                content += "        }\n";
-                content += "    }\n";
-                content += "    var tmp " + getClassName(this.fileName) + "\n";
-                content += "    return &tmp\n";
-                content += "}\n\n";
-            }
-        }
+        content += "    public static decode(list:Array<any>) {\n";
+        content += "      " + getClassName(this.fileName) + ".list.length = 0;\n";
+        content += "      for(let i = 0; i < list.length; i++) {\n";
+        content += "        let item = new " + getClassName(this.fileName) + "();\n";
+        content += "          for(let k in list[i]) {\n"
+        content += "            item[k] = list[i][k];\n";
+        content += "          }\n";
+        content += "          " + getClassName(this.fileName) + ".list.push(item);\n"
+        content += "      }\n";
+        content += "    }\n\n";
+
+        if(this.hasLink) content += linkContent;
+        content += "  }\n\n";
         return content;
     }
 
     getDecodeTable() {
         /**
-         *  DecodeHitPoint()
+         * for(let k in tables) {
+            if(k == "HitPoint") {
+                HitPoint.decode(tables[k]);
+            }
+        }
          */
-        return "    " + this.getFunctionName() + "()\n";
+        return "      if(k == \"" + getClassName(this.fileName) + "\") " + getClassName(this.fileName) + ".decode(tables[k]." + changeNameToNameS(this.fileName) + ");\n";
     }
 
     getLinkTable() {
         /**
          *  DecodeHitPoint()
          */
-        return this.hasLink?"    " + this.getLinkFunctionName() + "()\n":"";
+        return this.hasLink ? "    " + getClassName(this.fileName) + ".link();\n" : "";
     }
 
     getTableName() {
@@ -163,22 +180,22 @@ class GoFile {
 
     getClassName() {
         let str = changeNameToNameS(this.fileName);
-        return ('' + str.charAt(0)).toLocaleUpperCase() + str.slice(1,str.length);
+        return ('' + str.charAt(0)).toLocaleUpperCase() + str.slice(1, str.length);
     }
 
     getTypeString(type) {
-        if(type.isArray) {
-            if(type.isClass) return "[]*" + getClassName(type.className);
-            else return "[]" + this.getBaseType(type.baseType);
-        } else if(type.isClass) {
-            return "*" + getClassName(type.className);
+        if (type.isArray) {
+            if (type.isClass) return "Array<" + getClassName(type.className) + ">";
+            else return "Array<" + this.getBaseType(type.baseType) + ">";
+        } else if (type.isClass) {
+            return getClassName(type.className);
         } else {
             return this.getBaseType(type.baseType);
         }
     }
 
     getTypeString2(type) {
-        if(type.isArray) {
+        if (type.isArray) {
             return "[]" + this.getBaseType(type.baseType);
         } else {
             return this.getBaseType(type.baseType);
@@ -187,40 +204,38 @@ class GoFile {
 
     getTableConfig() {
         let name = this.fileName;
-        return ('' + name.charAt(0)).toLocaleUpperCase() + name.slice(1,name.length);
+        return ('' + name.charAt(0)).toLocaleUpperCase() + name.slice(1, name.length);
     }
 
     getBaseType(t) {
-        if(t == "int" || t == "int32") return "int32";
-        if(t == "int64") return "int64";
-        if(t == "uint" || t == "uint32") return "uint32";
-        if(t == "uint64") return "uint64";
-        if(t == "number" || t == "float" || t == "float32") return "float32";
-        if(t == "float64") return "float64";
-        if(t == "string") return "string";
+        if (t == "int" || t == "int32") return "number";
+        if (t == "int64") return "number";
+        if (t == "uint" || t == "uint32") return "number";
+        if (t == "uint64") return "number";
+        if (t == "number" || t == "float" || t == "float32") return "number";
+        if (t == "float64") return "number";
+        if (t == "string") return "string";
     }
 }
 
 
 
-class Go {
+class TS {
     constructor() {
         this.files = [];
     }
 
-    printGo(params,fileOut,packageName="main") {
+    printGo(params, fileOut, packageName = "main") {
         let classDefine = "";
-        let classes = "";
         let decodeTable = "";
         let linkTable = "";
-        for(let i = 0; i < this.files.length; i++) {
+        for (let i = 0; i < this.files.length; i++) {
             classDefine += this.files[i].getClassDefine();
-            classes += this.files[i].getClasses();
             decodeTable += this.files[i].getDecodeTable();
             linkTable += this.files[i].getLinkTable();
         }
-        let content = GetGoTemp(params.package||"main",classDefine,classes,decodeTable,linkTable);
-        (new File(params.goout?params.goout:FilePath.join(params.out,params.package + ".go"))).save(content);
+        let content = GetTSTemp(params.package || "main", classDefine, decodeTable, linkTable);
+        (new File(params.tsout ? params.tsout : FilePath.join(params.out, "Config.ts"))).save(content);
     }
 
     addPage(params, fileName, pageName, list) {
@@ -231,7 +246,7 @@ class Go {
         let descs = list[2];
         let res = [];
         for (let i = 0; i < types.length; i++) types[i] = new Type(types[i]);
-        this.files.push(new GoFile(fileName,types,names));
+        this.files.push(new TSFile(fileName, types, names));
         this.printGo(params);
         for (let i = 3; i < list.length; i++) {
             let items = list[i];
@@ -281,7 +296,7 @@ class Go {
                             item[name] = [];
                         }
                         item[names[t]] = [];
-                        for(let d = 0; d < item[name].length; d++) {
+                        for (let d = 0; d < item[name].length; d++) {
                             item[names[t]][d] = null;
                         }
                     } else {
@@ -332,4 +347,4 @@ class Go {
     }
 }
 
-global.Go = Go;
+global.TS = TS;

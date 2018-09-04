@@ -1,1 +1,1 @@
-node main.js --l=go --dir=./config/  --out=./configOut --goout=/Users/limengjie/Documents/golang/src --package=config
+node main.js --l=go --dir=./config/  --out=./configOut --goout=/Users/limengjie/Documents/golang/src/config/config.go --package=config
