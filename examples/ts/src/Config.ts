@@ -171,6 +171,86 @@ namespace config {
 
   }
 
+  export class Example {
+    public id:number
+    public item2:number
+    public item3:number
+    public item4:number
+    public item5:string
+    public item6:Array<number>
+    public item7:Array<string>
+    public player:Role
+    public enemies:Array<Role>
+
+    public static list:Array<Example> = [];
+
+    public static getById(value:number):Example {
+      let list = Example.list;
+      for(let i = 0; i < list.length; i++) {
+        if(list[i].id == value) return list[i];
+      }
+      return null;
+    }
+
+    public static getByItem2(value:number):Example {
+      let list = Example.list;
+      for(let i = 0; i < list.length; i++) {
+        if(list[i].item2 == value) return list[i];
+      }
+      return null;
+    }
+
+    public static getByItem3(value:number):Example {
+      let list = Example.list;
+      for(let i = 0; i < list.length; i++) {
+        if(list[i].item3 == value) return list[i];
+      }
+      return null;
+    }
+
+    public static getByItem4(value:number):Example {
+      let list = Example.list;
+      for(let i = 0; i < list.length; i++) {
+        if(list[i].item4 == value) return list[i];
+      }
+      return null;
+    }
+
+    public static getByItem5(value:string):Example {
+      let list = Example.list;
+      for(let i = 0; i < list.length; i++) {
+        if(list[i].item5 == value) return list[i];
+      }
+      return null;
+    }
+
+    public static decode(list:Array<any>) {
+      Example.list.length = 0;
+      for(let i = 0; i < list.length; i++) {
+        let item = new Example();
+          for(let k in list[i]) {
+            item[k] = list[i][k];
+          }
+          Example.list.push(item);
+      }
+    }
+
+    public static link() {
+      let list = Example.list;
+      for(let i = 0; i < list.length; i++) {
+        let item = list[i];
+        item.player = Role.getById(item["c_item_player"]);
+        delete item["c_item_player"];
+        for(let n = 0; n < item["c_item_enemies"].length; n++) {
+          item.enemies[n] = Role.getById(item["c_item_enemies"][n]);
+        }
+        delete item["c_item_enemies"];
+      }
+      return null;
+    }
+
+  }
+
   export class HitPoint {
     public id:number
     public x:number
@@ -282,9 +362,11 @@ namespace config {
       for(let i = 0; i < list.length; i++) {
         let item = list[i];
         item.player = Role.getById(item["c_item_player"]);
+        delete item["c_item_player"];
         for(let n = 0; n < item["c_item_enemies"].length; n++) {
           item.enemies[n] = Role.getById(item["c_item_enemies"][n]);
         }
+        delete item["c_item_enemies"];
       }
       return null;
     }
@@ -341,10 +423,13 @@ namespace config {
       for(let i = 0; i < list.length; i++) {
         let item = list[i];
         item.ai = AI.getById(item["c_item_ai"]);
+        delete item["c_item_ai"];
         item.avatar = Avatar.getById(item["c_item_avatar"]);
+        delete item["c_item_avatar"];
         for(let n = 0; n < item["c_item_hitPoints"].length; n++) {
           item.hitPoints[n] = HitPoint.getById(item["c_item_hitPoints"][n]);
         }
+        delete item["c_item_hitPoints"];
       }
       return null;
     }
@@ -358,10 +443,12 @@ namespace config {
       if(k == "AI") AI.decode(tables[k].aI);
       if(k == "Avatar") Avatar.decode(tables[k].avatar);
       if(k == "Common") Common.decode(tables[k].common);
+      if(k == "Example") Example.decode(tables[k].example);
       if(k == "HitPoint") HitPoint.decode(tables[k].hitPoint);
       if(k == "Level") Level.decode(tables[k].level);
       if(k == "Role") Role.decode(tables[k].role);
     }
+    Example.link();
     Level.link();
     Role.link();
   }

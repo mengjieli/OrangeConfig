@@ -114,10 +114,12 @@ class TSFile {
                         + getClassName(this.types[i].className) + ".getById(item[\""
                         + changeAttributeToSave(this.names[i]) + "\"][n]);\n";
                     linkContent += "        }\n";
+                    linkContent += "        delete item[\"" + changeAttributeToSave(this.names[i]) + "\"];\n";
                 } else {
                     linkContent += "        item." + getAttributeName(this.names[i]) + " = "
                         + getClassName(this.types[i].className) + ".getById(item[\""
                         + changeAttributeToSave(this.names[i]) + "\"]);\n";
+                    linkContent += "        delete item[\"" + changeAttributeToSave(this.names[i]) + "\"];\n";
                 }
             }
         }

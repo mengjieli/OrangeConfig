@@ -155,6 +155,76 @@ var config;
         return Common;
     }());
     config.Common = Common;
+    var Example = /** @class */ (function () {
+        function Example() {
+        }
+        Example.getById = function (value) {
+            var list = Example.list;
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].id == value)
+                    return list[i];
+            }
+            return null;
+        };
+        Example.getByItem2 = function (value) {
+            var list = Example.list;
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].item2 == value)
+                    return list[i];
+            }
+            return null;
+        };
+        Example.getByItem3 = function (value) {
+            var list = Example.list;
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].item3 == value)
+                    return list[i];
+            }
+            return null;
+        };
+        Example.getByItem4 = function (value) {
+            var list = Example.list;
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].item4 == value)
+                    return list[i];
+            }
+            return null;
+        };
+        Example.getByItem5 = function (value) {
+            var list = Example.list;
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].item5 == value)
+                    return list[i];
+            }
+            return null;
+        };
+        Example.decode = function (list) {
+            Example.list.length = 0;
+            for (var i = 0; i < list.length; i++) {
+                var item = new Example();
+                for (var k in list[i]) {
+                    item[k] = list[i][k];
+                }
+                Example.list.push(item);
+            }
+        };
+        Example.link = function () {
+            var list = Example.list;
+            for (var i = 0; i < list.length; i++) {
+                var item = list[i];
+                item.player = Role.getById(item["c_item_player"]);
+                delete item["c_item_player"];
+                for (var n = 0; n < item["c_item_enemies"].length; n++) {
+                    item.enemies[n] = Role.getById(item["c_item_enemies"][n]);
+                }
+                delete item["c_item_enemies"];
+            }
+            return null;
+        };
+        Example.list = [];
+        return Example;
+    }());
+    config.Example = Example;
     var HitPoint = /** @class */ (function () {
         function HitPoint() {
         }
@@ -254,9 +324,11 @@ var config;
             for (var i = 0; i < list.length; i++) {
                 var item = list[i];
                 item.player = Role.getById(item["c_item_player"]);
+                delete item["c_item_player"];
                 for (var n = 0; n < item["c_item_enemies"].length; n++) {
                     item.enemies[n] = Role.getById(item["c_item_enemies"][n]);
                 }
+                delete item["c_item_enemies"];
             }
             return null;
         };
@@ -306,10 +378,13 @@ var config;
             for (var i = 0; i < list.length; i++) {
                 var item = list[i];
                 item.ai = AI.getById(item["c_item_ai"]);
+                delete item["c_item_ai"];
                 item.avatar = Avatar.getById(item["c_item_avatar"]);
+                delete item["c_item_avatar"];
                 for (var n = 0; n < item["c_item_hitPoints"].length; n++) {
                     item.hitPoints[n] = HitPoint.getById(item["c_item_hitPoints"][n]);
                 }
+                delete item["c_item_hitPoints"];
             }
             return null;
         };
@@ -325,6 +400,8 @@ var config;
                 Avatar.decode(tables[k].avatar);
             if (k == "Common")
                 Common.decode(tables[k].common);
+            if (k == "Example")
+                Example.decode(tables[k].example);
             if (k == "HitPoint")
                 HitPoint.decode(tables[k].hitPoint);
             if (k == "Level")
@@ -332,9 +409,11 @@ var config;
             if (k == "Role")
                 Role.decode(tables[k].role);
         }
+        Example.link();
         Level.link();
         Role.link();
     }
     config.decodeConfig = decodeConfig;
 })(config || (config = {}));
+
 global.config = config;

@@ -8,4 +8,4 @@ for (var i = 0; i < list.length; i++) {
 }
 config.decodeConfig(tables);
 // console.log(JSON.stringify(tables));
-console.log(config.Role.getById(1));
+console.log(config.Example.getById(1));
